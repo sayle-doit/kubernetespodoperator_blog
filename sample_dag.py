@@ -1,8 +1,8 @@
 import datetime
 
 from airflow import models
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.operators.bash_operator import BashOperator
+from airflow.operators.python_operator import PythonOperator
 from airflow.providers.cncf.kubernetes.operators import kubernetes_pod
 from airflow.models import Variable
 
@@ -39,6 +39,8 @@ with models.DAG(JOB_NAME,
     gcloud container node-pools create "$NODE_POOL" --project $GCP_PROJECT --cluster $COMPOSER_GKE_NAME \
     --num-nodes "$NODE_COUNT" --zone $COMPOSER_GKE_ZONE --machine-type $MACHINE_TYPE --scopes $SCOPES \
     --enable-autoupgrade
+    
+    airflow variables -s node_pool $NODE_POOL
     
     # Echo out the node pool name for xcom to grab
     echo $NODE_POOL
@@ -120,7 +122,7 @@ with models.DAG(JOB_NAME,
                             # SM: In this case it will execute the command on the node
                             # pool created by the Airflow bash operator.
                             'values': [
-                                Variable.get("node_pool")
+                                Variable.get("node_pool", default_var=node_pool_value)
                             ]
                         }]
                     }]
@@ -161,7 +163,7 @@ with models.DAG(JOB_NAME,
                             # The label key's value that pods can be scheduled
                             # on.
                             'values': [
-                                Variable.get("node_pool")
+                                Variable.get("node_pool", default_var=node_pool_value)
                             ]
                         }]
                     }]

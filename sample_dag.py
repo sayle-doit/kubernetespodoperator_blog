@@ -33,6 +33,7 @@ with models.DAG(JOB_NAME,
     [ -z "${NODE_COUNT}" ] && NODE_COUNT=3
     [ -z "${MACHINE_TYPE}" ] && MACHINE_TYPE=e2-standard-8
     [ -z "${SCOPES}" ] && SCOPES=default,cloud-platform
+    [ -z "${NODE_POOL_VARIABLE}" ] && NODE_POOL_VARIABLE=node_pool
     
     # Generate node-pool name 
     NODE_POOL=""" + node_pool_value + """
@@ -40,10 +41,8 @@ with models.DAG(JOB_NAME,
     --num-nodes "$NODE_COUNT" --zone $COMPOSER_GKE_ZONE --machine-type $MACHINE_TYPE --scopes $SCOPES \
     --enable-autoupgrade
     
-    airflow variables -s node_pool $NODE_POOL
-    
-    # Echo out the node pool name for xcom to grab
-    echo $NODE_POOL
+    # Set the airflow variable name
+    airflow variables -s $NODE_POOL_VARIABLE $NODE_POOL
     """
 
     delete_node_pools_command = """
@@ -58,19 +57,6 @@ with models.DAG(JOB_NAME,
         task_id="create_node_pool",
         bash_command=create_node_pool_command,
         xcom_push=True,
-        dag=dag
-    )
-
-    # Assigns a variable named node_pool with the node pool name as the value.
-    # This is needed since the KubernetesPodOperator cannot read environment variables for affinity values
-    def store_node_pool(**context):
-        node_pool = context['ti'].xcom_pull(task_ids='create_node_pool')
-        Variable.set("node_pool", node_pool)
-
-    store_node_pool_task = PythonOperator(
-        task_id="store_node_pool",
-        python_callable=store_node_pool,
-        provide_context=True,
         dag=dag
     )
 
@@ -119,7 +105,7 @@ with models.DAG(JOB_NAME,
                             'operator': 'In',
                             # The label key's value that pods can be scheduled
                             # on.
-                            # SM: In this case it will execute the command on the node
+                            # In this case it will execute the command on the node
                             # pool created by the Airflow bash operator.
                             'values': [
                                 Variable.get("node_pool", default_var=node_pool_value)
@@ -162,6 +148,8 @@ with models.DAG(JOB_NAME,
                             'operator': 'In',
                             # The label key's value that pods can be scheduled
                             # on.
+                            # In this case it will execute the command on the node
+                            # pool created by the Airflow bash operator.
                             'values': [
                                 Variable.get("node_pool", default_var=node_pool_value)
                             ]
@@ -172,4 +160,4 @@ with models.DAG(JOB_NAME,
         })
 
     # Tasks order
-    create_node_pool_task >> store_node_pool_task >> [etl_task, etl_task2] >> delete_node_pool_task
+    create_node_pool_task >> [etl_task, etl_task2] >> delete_node_pool_task

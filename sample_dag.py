@@ -33,7 +33,6 @@ with models.DAG(JOB_NAME,
     [ -z "${NODE_COUNT}" ] && NODE_COUNT=3
     [ -z "${MACHINE_TYPE}" ] && MACHINE_TYPE=e2-standard-8
     [ -z "${SCOPES}" ] && SCOPES=default,cloud-platform
-    [ -z "${NODE_POOL_VARIABLE}" ] && NODE_POOL_VARIABLE=node_pool
     
     # Generate node-pool name 
     NODE_POOL=""" + node_pool_value + """
@@ -42,7 +41,7 @@ with models.DAG(JOB_NAME,
     --enable-autoupgrade
     
     # Set the airflow variable name
-    airflow variables -s $NODE_POOL_VARIABLE $NODE_POOL
+    airflow variables -s node_pool $NODE_POOL
     """
 
     delete_node_pools_command = """

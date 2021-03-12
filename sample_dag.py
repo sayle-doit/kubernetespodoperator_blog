@@ -67,18 +67,11 @@ with models.DAG(JOB_NAME,
         dag=dag
     )
 
-    compute_resources = \
-        {'request_cpu': '1200m',
-         'request_memory': '3Gi',
-         'limit_cpu': '1600m',
-         'limit_memory': '6Gi'}
-
     etl_task = kubernetes_pod.KubernetesPodOperator(
         task_id='etl-task',
         name='etl',
         namespace='default',
         image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-        resources=compute_resources,
         cmds=["sh", "-c", 'echo \'Sleeping..\'; sleep 120; echo \'Done!\''],
         startup_timeout_seconds=720,
         # affinity allows you to constrain which nodes your pod is eligible to
@@ -121,7 +114,6 @@ with models.DAG(JOB_NAME,
         name='etl',
         namespace='default',
         image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-        resources=compute_resources,
         cmds=["sh", "-c", 'echo \'Sleeping..\'; sleep 120; echo \'Done!\''],
         startup_timeout_seconds=720,
         # affinity allows you to constrain which nodes your pod is eligible to

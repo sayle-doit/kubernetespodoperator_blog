@@ -23,9 +23,9 @@ Deletes the created node pool.
 NODE_COUNT<br />
 The number of nodes to provision inside the node pool. Default value is 3
 
-MACHINE_TYPE
+MACHINE_TYPE<br />
 The instance type for instances provisioned inside the node pool. Default value is e2-standard-8<br />
 This equates to a VM with 8 vCPUs and 32GB of RAM
 
-SCOPES
+SCOPES<br />
 The scopes that will be applied to the nodes inside the node pool. Default value is default,cloud-platform

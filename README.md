@@ -1,6 +1,6 @@
 # Sayle's KubernetesPodOperator Medium Article Code
 
-This is the codebase to be used with the Medium article located at: <TOOD Insert URL here>
+This is the codebase to be used with the Medium article located at: https://blog.doit-intl.com/running-containers-on-google-cloud-composer-1f4d6d5b7e08
 
 It contains a DAG that will create a new GKE node pool, run 2 KubernetesPodOperator tasks, and then delete the created node pool.
 
